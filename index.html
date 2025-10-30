@@ -1,213 +1,236 @@
-import React, { useState } from 'react';
-import { Sparkles, Heart, Moon, Sun } from 'lucide-react';
-
-const TarotFortune = () => {
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  
-  // ⭐ 여기에 카카오채널 링크를 입력하세요!
-  const KAKAO_CHANNEL_LINK = "https://pf.kakao.com/_your_channel_id";
-
-  // 78장 타로카드 풀
-  const tarotDeck = [
-    // 메이저 아르카나
-    { name: '바보', emoji: '🎭', message: '새로운 시작이 기다리고 있어. 두려워하지 말고 도전해봐.', keyword: '시작' },
-    { name: '마법사', emoji: '✨', message: '네가 가진 능력을 100% 발휘할 타이밍이야. 자신감 가져.', keyword: '능력' },
-    { name: '여사제', emoji: '🌙', message: '직감을 믿어. 네 내면의 목소리가 정답을 알고 있어.', keyword: '직감' },
-    { name: '여황제', emoji: '👑', message: '풍요와 안정이 찾아와. 받을 준비 해.', keyword: '풍요' },
-    { name: '황제', emoji: '⚔️', message: '계획대로 실행할 때야. 리더십을 발휘해.', keyword: '실행' },
-    { name: '교황', emoji: '📿', message: '조언을 구해봐. 좋은 멘토가 나타날 거야.', keyword: '조언' },
-    { name: '연인', emoji: '💕', message: '중요한 선택의 순간이야. 마음 가는 대로 결정해.', keyword: '선택' },
-    { name: '전차', emoji: '🏆', message: '승리가 눈앞이야. 끝까지 밀고 나가.', keyword: '승리' },
-    { name: '힘', emoji: '💪', message: '부드러운 힘으로 이겨내. 인내심이 답이야.', keyword: '인내' },
-    { name: '은둔자', emoji: '🕯️', message: '혼자만의 시간이 필요해. 내면을 들여다봐.', keyword: '성찰' },
-    { name: '운명의 수레바퀴', emoji: '🎡', message: '운이 상승하고 있어. 긍정적인 변화가 와.', keyword: '변화' },
-    { name: '정의', emoji: '⚖️', message: '공정한 결과가 나올 거야. 정직하게 행동해.', keyword: '공정' },
-    { name: '거꾸로 매달린 사람', emoji: '🌊', message: '관점을 바꿔봐. 새로운 시각이 답을 줄 거야.', keyword: '전환' },
-    { name: '죽음', emoji: '🦋', message: '끝이 아니라 새로운 시작이야. 변화를 받아들여.', keyword: '재탄생' },
-    { name: '절제', emoji: '🧘', message: '균형을 찾아. 중도가 최선의 길이야.', keyword: '균형' },
-    { name: '악마', emoji: '⛓️', message: '집착을 놓아. 자유로워질 시간이야.', keyword: '해방' },
-    { name: '탑', emoji: '⚡', message: '갑작스런 변화가 와. 하지만 더 나은 방향이야.', keyword: '파괴' },
-    { name: '별', emoji: '⭐', message: '희망을 가져. 네 꿈은 이뤄질 거야.', keyword: '희망' },
-    { name: '달', emoji: '🌙', message: '불안해하지 마. 곧 진실이 드러날 거야.', keyword: '진실' },
-    { name: '태양', emoji: '☀️', message: '행복과 성공이 함께 와. 밝은 에너지를 받아.', keyword: '성공' },
-    { name: '심판', emoji: '📯', message: '과거를 정리할 때야. 새 출발 준비해.', keyword: '정리' },
-    { name: '세계', emoji: '🌍', message: '완성의 순간이야. 모든 게 제자리를 찾아가.', keyword: '완성' },
-    // 컵
-    { name: '에이스 오브 컵', emoji: '💖', message: '새로운 사랑이나 감정이 시작돼. 마음을 열어.', keyword: '사랑시작' },
-    { name: '컵2', emoji: '💑', message: '관계가 깊어져. 소통을 더 해봐.', keyword: '연결' },
-    { name: '컵3', emoji: '🎉', message: '축하할 일이 생겨. 주변과 기쁨을 나눠.', keyword: '축하' },
-    { name: '컵6', emoji: '💭', message: '그리운 사람이 떠올라. 좋은 추억을 회상해.', keyword: '그리움' },
-    { name: '컵10', emoji: '🏡', message: '가족과 평화로운 시간을 가져. 행복이 가득해.', keyword: '행복' },
-    // 완드
-    { name: '에이스 오브 완드', emoji: '🔥', message: '열정이 폭발해. 하고 싶은 거 바로 시작해.', keyword: '열정' },
-    { name: '완드3', emoji: '🚀', message: '확장의 시기야. 더 큰 그림을 그려봐.', keyword: '확장' },
-    { name: '완드8', emoji: '⚡', message: '빠른 진전이 있어. 속도를 늦추지 마.', keyword: '속도' },
-    // 소드
-    { name: '에이스 오브 소드', emoji: '🗡️', message: '명확한 답을 찾아. 진실이 보여.', keyword: '명확' },
-    { name: '소드2', emoji: '🤔', message: '결정을 미루지 마. 선택의 시간이야.', keyword: '결정' },
-    { name: '소드6', emoji: '⛵', message: '힘든 시기를 벗어나. 평온이 찾아와.', keyword: '평온' },
-    // 펜타클
-    { name: '에이스 오브 펜타클', emoji: '💰', message: '재물운이 상승해. 기회를 잡아.', keyword: '재물' },
-    { name: '펜타클3', emoji: '🏗️', message: '협력이 성공을 만들어. 팀워크를 발휘해.', keyword: '협력' },
-    { name: '펜타클9', emoji: '🌟', message: '노력한 만큼 결실을 맺어. 보상이 와.', keyword: '결실' },
-    { name: '펜타클10', emoji: '👨‍👩‍👧‍👦', message: '안정과 풍요가 찾아와. 가족과 함께해.', keyword: '안정' }
-  ];
-
-  // A, B, C 카드 랜덤 선택
-  const [cardA] = useState(tarotDeck[Math.floor(Math.random() * tarotDeck.length)]);
-  const [cardB] = useState(tarotDeck[Math.floor(Math.random() * tarotDeck.length)]);
-  const [cardC] = useState(tarotDeck[Math.floor(Math.random() * tarotDeck.length)]);
-
-  const cards = { A: cardA, B: cardB, C: cardC };
-
-  const handleCardSelect = (card) => {
-    setSelectedCard(card);
-    setShowResult(true);
-  };
-
-  const reset = () => {
-    setSelectedCard(null);
-    setShowResult(false);
-    window.location.reload();
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-4 flex items-center justify-center">
-      <div className="max-w-2xl w-full">
-        {/* 헤더 */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <Moon className="text-yellow-300" size={32} />
-            <h1 className="text-4xl font-bold text-white">11월 운세</h1>
-            <Sun className="text-yellow-300" size={32} />
-          </div>
-          <p className="text-purple-200 text-lg">
-            {showResult ? '스치니의 11월 운세 카드' : '마음으로 하나를 선택해봐'}
-          </p>
-        </div>
-
-        {!showResult ? (
-          /* 카드 선택 화면 */
-          <div className="grid grid-cols-3 gap-6 mb-8">
-            {['A', 'B', 'C'].map((letter) => (
-              <button
-                key={letter}
-                onClick={() => handleCardSelect(letter)}
-                className="group relative"
-              >
-                <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50 border-2 border-purple-400">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">
-                      🎴
-                    </div>
-                    <div className="text-4xl font-bold text-white">{letter}</div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          /* 결과 화면 */
-          <div className="space-y-6 animate-fade-in">
-            {/* 선택한 카드 결과 */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-purple-300/30">
-              <div className="text-center mb-6">
-                <div className="inline-block bg-purple-500 text-white px-6 py-2 rounded-full text-xl font-bold mb-4">
-                  선택: {selectedCard}
-                </div>
-                <div className="text-7xl mb-4">{cards[selectedCard].emoji}</div>
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  {cards[selectedCard].name}
-                </h2>
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Sparkles className="text-yellow-300" size={20} />
-                  <span className="text-purple-200 text-lg">
-                    키워드: {cards[selectedCard].keyword}
-                  </span>
-                  <Sparkles className="text-yellow-300" size={20} />
-                </div>
-              </div>
-              
-              <div className="bg-white/5 rounded-2xl p-6 mb-6">
-                <p className="text-white text-xl leading-relaxed text-center">
-                  {cards[selectedCard].message}
-                </p>
-              </div>
-
-              {/* CTA 섹션 */}
-              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-2xl p-6 border border-pink-300/30">
-                <p className="text-white text-center mb-4">
-                  이 메시지가 와닿는다면 <span className="font-bold text-yellow-300">'{cards[selectedCard].keyword}'</span> 댓글 남겨봐.
-                </p>
-                <p className="text-purple-200 text-sm text-center">
-                  댓글 다는 순간, 스치니의 11월 운이 올라가.
-                </p>
-              </div>
-            </div>
-
-            {/* 나머지 카드 공개 */}
-            <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6">
-              <h3 className="text-white text-center font-bold mb-4 text-lg">
-                💫 선택하지 않은 카드들
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {['A', 'B', 'C'].filter(l => l !== selectedCard).map((letter) => (
-                  <div key={letter} className="bg-white/10 rounded-xl p-4 text-center">
-                    <div className="text-2xl mb-2">{cards[letter].emoji}</div>
-                    <div className="text-white font-bold mb-1">{letter}: {cards[letter].name}</div>
-                    <div className="text-purple-200 text-sm">{cards[letter].keyword}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 다시하기 버튼 */}
-            <button
-              onClick={reset}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg"
-            >
-              🔄 다시 선택하기
-            </button>
-          </div>
-        )}
-
-        {/* 무료 타로 안내 (항상 표시) */}
-        <div className="mt-8 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-300/30">
-          <div className="text-center">
-            <Heart className="inline-block text-pink-400 mb-3" size={28} />
-            <p className="text-white font-bold text-lg mb-3">
-              11월 운세를 더 자세히 알고 싶은 스치니는 무료타로 이벤트 신청해봐!
-            </p>
-            <div className="bg-white/10 rounded-xl p-4 mb-4">
-              <p className="text-purple-200 mb-2">✅ 이 글 스하리 해주고</p>
-              <p className="text-purple-200 mb-2">✅ 카카오채널 친추 후</p>
-              <p className="text-purple-200">✅ 인증하면 무료타로 이벤트 참여 가능해!</p>
-            </div>
-            <div className="bg-pink-500/30 rounded-lg p-3">
-              <p className="text-white">👉 카카오채널: [링크]</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11월 운세 타로 - 타로멘탈리스트 엘렌</title>
+    <meta name="description" content="11월 운세를 타로로 확인해보세요! A, B, C 중 마음이 끌리는 카드를 선택하세요.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
         @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
+            animation: fade-in 0.5s ease-out;
         }
-      `}</style>
-    </div>
-  );
-};
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
+    <div id="app" class="p-4 flex items-center justify-center min-h-screen">
+        <div class="max-w-2xl w-full">
+            <!-- 헤더 -->
+            <div class="text-center mb-8">
+                <div class="flex justify-center items-center gap-2 mb-4">
+                    <span class="text-4xl">🌙</span>
+                    <h1 class="text-4xl font-bold text-white">11월 운세</h1>
+                    <span class="text-4xl">☀️</span>
+                </div>
+                <p class="text-purple-200 text-lg" id="subtitle">마음으로 하나를 선택해봐</p>
+            </div>
 
-export default TarotFortune;
+            <!-- 카드 선택 화면 -->
+            <div id="card-selection" class="grid grid-cols-3 gap-6 mb-8">
+                <button onclick="selectCard('A')" class="group relative">
+                    <div class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50 border-2 border-purple-400">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🎴</div>
+                            <div class="text-4xl font-bold text-white">A</div>
+                        </div>
+                    </div>
+                </button>
+                <button onclick="selectCard('B')" class="group relative">
+                    <div class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50 border-2 border-purple-400">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🎴</div>
+                            <div class="text-4xl font-bold text-white">B</div>
+                        </div>
+                    </div>
+                </button>
+                <button onclick="selectCard('C')" class="group relative">
+                    <div class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50 border-2 border-purple-400">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🎴</div>
+                            <div class="text-4xl font-bold text-white">C</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div id="result" class="hidden animate-fade-in space-y-6">
+                <!-- 선택한 카드 결과 -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-purple-300/30">
+                    <div class="text-center mb-6">
+                        <div class="inline-block bg-purple-500 text-white px-6 py-2 rounded-full text-xl font-bold mb-4">
+                            선택: <span id="selected-letter"></span>
+                        </div>
+                        <div class="text-7xl mb-4" id="card-emoji"></div>
+                        <h2 class="text-3xl font-bold text-white mb-2" id="card-name"></h2>
+                        <div class="flex items-center justify-center gap-2 mb-4">
+                            <span class="text-yellow-300">✨</span>
+                            <span class="text-purple-200 text-lg">
+                                키워드: <span id="card-keyword"></span>
+                            </span>
+                            <span class="text-yellow-300">✨</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white/5 rounded-2xl p-6 mb-6">
+                        <p class="text-white text-xl leading-relaxed text-center" id="card-message"></p>
+                    </div>
+
+                    <!-- CTA 섹션 -->
+                    <div class="bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-2xl p-6 border border-pink-300/30">
+                        <p class="text-white text-center mb-4">
+                            이 메시지가 와닿는다면 <span class="font-bold text-yellow-300" id="cta-keyword"></span> 댓글 남겨봐.
+                        </p>
+                        <p class="text-purple-200 text-sm text-center">
+                            댓글 다는 순간, 스치니의 11월 운이 올라가.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 나머지 카드 공개 -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6">
+                    <h3 class="text-white text-center font-bold mb-4 text-lg">💫 선택하지 않은 카드들</h3>
+                    <div class="grid grid-cols-2 gap-4" id="other-cards"></div>
+                </div>
+
+                <!-- 다시하기 버튼 -->
+                <button onclick="reset()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg">
+                    🔄 다시 선택하기
+                </button>
+            </div>
+
+            <!-- 무료 타로 안내 -->
+            <div class="mt-8 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-300/30">
+                <div class="text-center">
+                    <span class="text-4xl mb-3 inline-block">💖</span>
+                    <p class="text-white font-bold text-lg mb-3">
+                        11월 운세를 더 자세히 알고 싶은 스치니는 무료타로 이벤트 신청해봐!
+                    </p>
+                    <div class="bg-white/10 rounded-xl p-4 mb-4">
+                        <p class="text-purple-200 mb-2">✅ 이 글 스하리 해주고</p>
+                        <p class="text-purple-200 mb-2">✅ 카카오채널 친추 후</p>
+                        <p class="text-purple-200">✅ 인증하면 무료타로 이벤트 참여 가능해!</p>
+                    </div>
+                    <div class="bg-pink-500/30 rounded-lg p-3">
+                        <a href="http://pf.kakao.com/_nsVjG/chat" target="_blank" rel="noopener noreferrer" class="text-white font-bold hover:text-yellow-300 transition-colors inline-block">
+                            👉 카카오채널 바로가기 클릭!
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 타로카드 데이터
+        const tarotDeck = [
+            { name: '바보', emoji: '🎭', message: '새로운 시작이 기다리고 있어. 두려워하지 말고 도전해봐.', keyword: '시작' },
+            { name: '마법사', emoji: '✨', message: '네가 가진 능력을 100% 발휘할 타이밍이야. 자신감 가져.', keyword: '능력' },
+            { name: '여사제', emoji: '🌙', message: '직감을 믿어. 네 내면의 목소리가 정답을 알고 있어.', keyword: '직감' },
+            { name: '여황제', emoji: '👑', message: '풍요와 안정이 찾아와. 받을 준비 해.', keyword: '풍요' },
+            { name: '황제', emoji: '⚔️', message: '계획대로 실행할 때야. 리더십을 발휘해.', keyword: '실행' },
+            { name: '교황', emoji: '📿', message: '조언을 구해봐. 좋은 멘토가 나타날 거야.', keyword: '조언' },
+            { name: '연인', emoji: '💕', message: '중요한 선택의 순간이야. 마음 가는 대로 결정해.', keyword: '선택' },
+            { name: '전차', emoji: '🏆', message: '승리가 눈앞이야. 끝까지 밀고 나가.', keyword: '승리' },
+            { name: '힘', emoji: '💪', message: '부드러운 힘으로 이겨내. 인내심이 답이야.', keyword: '인내' },
+            { name: '은둔자', emoji: '🕯️', message: '혼자만의 시간이 필요해. 내면을 들여다봐.', keyword: '성찰' },
+            { name: '운명의 수레바퀴', emoji: '🎡', message: '운이 상승하고 있어. 긍정적인 변화가 와.', keyword: '변화' },
+            { name: '정의', emoji: '⚖️', message: '공정한 결과가 나올 거야. 정직하게 행동해.', keyword: '공정' },
+            { name: '거꾸로 매달린 사람', emoji: '🌊', message: '관점을 바꿔봐. 새로운 시각이 답을 줄 거야.', keyword: '전환' },
+            { name: '죽음', emoji: '🦋', message: '끝이 아니라 새로운 시작이야. 변화를 받아들여.', keyword: '재탄생' },
+            { name: '절제', emoji: '🧘', message: '균형을 찾아. 중도가 최선의 길이야.', keyword: '균형' },
+            { name: '악마', emoji: '⛓️', message: '집착을 놓아. 자유로워질 시간이야.', keyword: '해방' },
+            { name: '탑', emoji: '⚡', message: '갑작스런 변화가 와. 하지만 더 나은 방향이야.', keyword: '파괴' },
+            { name: '별', emoji: '⭐', message: '희망을 가져. 네 꿈은 이뤄질 거야.', keyword: '희망' },
+            { name: '달', emoji: '🌙', message: '불안해하지 마. 곧 진실이 드러날 거야.', keyword: '진실' },
+            { name: '태양', emoji: '☀️', message: '행복과 성공이 함께 와. 밝은 에너지를 받아.', keyword: '성공' },
+            { name: '심판', emoji: '📯', message: '과거를 정리할 때야. 새 출발 준비해.', keyword: '정리' },
+            { name: '세계', emoji: '🌍', message: '완성의 순간이야. 모든 게 제자리를 찾아가.', keyword: '완성' },
+            { name: '에이스 오브 컵', emoji: '💖', message: '새로운 사랑이나 감정이 시작돼. 마음을 열어.', keyword: '사랑시작' },
+            { name: '컵2', emoji: '💑', message: '관계가 깊어져. 소통을 더 해봐.', keyword: '연결' },
+            { name: '컵3', emoji: '🎉', message: '축하할 일이 생겨. 주변과 기쁨을 나눠.', keyword: '축하' },
+            { name: '컵6', emoji: '💭', message: '그리운 사람이 떠올라. 좋은 추억을 회상해.', keyword: '그리움' },
+            { name: '컵10', emoji: '🏡', message: '가족과 평화로운 시간을 가져. 행복이 가득해.', keyword: '행복' },
+            { name: '에이스 오브 완드', emoji: '🔥', message: '열정이 폭발해. 하고 싶은 거 바로 시작해.', keyword: '열정' },
+            { name: '완드3', emoji: '🚀', message: '확장의 시기야. 더 큰 그림을 그려봐.', keyword: '확장' },
+            { name: '완드8', emoji: '⚡', message: '빠른 진전이 있어. 속도를 늦추지 마.', keyword: '속도' },
+            { name: '에이스 오브 소드', emoji: '🗡️', message: '명확한 답을 찾아. 진실이 보여.', keyword: '명확' },
+            { name: '소드2', emoji: '🤔', message: '결정을 미루지 마. 선택의 시간이야.', keyword: '결정' },
+            { name: '소드6', emoji: '⛵', message: '힘든 시기를 벗어나. 평온이 찾아와.', keyword: '평온' },
+            { name: '에이스 오브 펜타클', emoji: '💰', message: '재물운이 상승해. 기회를 잡아.', keyword: '재물' },
+            { name: '펜타클3', emoji: '🏗️', message: '협력이 성공을 만들어. 팀워크를 발휘해.', keyword: '협력' },
+            { name: '펜타클9', emoji: '🌟', message: '노력한 만큼 결실을 맺어. 보상이 와.', keyword: '결실' },
+            { name: '펜타클10', emoji: '👨‍👩‍👧‍👦', message: '안정과 풍요가 찾아와. 가족과 함께해.', keyword: '안정' }
+        ];
+
+        // 랜덤으로 3장 선택
+        function getRandomCards() {
+            const shuffled = [...tarotDeck].sort(() => Math.random() - 0.5);
+            return {
+                A: shuffled[0],
+                B: shuffled[1],
+                C: shuffled[2]
+            };
+        }
+
+        let selectedCards = getRandomCards();
+        let currentSelection = null;
+
+        function selectCard(letter) {
+            currentSelection = letter;
+            const card = selectedCards[letter];
+            
+            // 화면 전환
+            document.getElementById('card-selection').classList.add('hidden');
+            document.getElementById('subtitle').textContent = '스치니의 11월 운세 카드';
+            document.getElementById('result').classList.remove('hidden');
+            
+            // 결과 표시
+            document.getElementById('selected-letter').textContent = letter;
+            document.getElementById('card-emoji').textContent = card.emoji;
+            document.getElementById('card-name').textContent = card.name;
+            document.getElementById('card-keyword').textContent = card.keyword;
+            document.getElementById('card-message').textContent = card.message;
+            document.getElementById('cta-keyword').textContent = `'${card.keyword}'`;
+            
+            // 나머지 카드 표시
+            const otherCardsHtml = ['A', 'B', 'C']
+                .filter(l => l !== letter)
+                .map(l => {
+                    const otherCard = selectedCards[l];
+                    return `
+                        <div class="bg-white/10 rounded-xl p-4 text-center">
+                            <div class="text-2xl mb-2">${otherCard.emoji}</div>
+                            <div class="text-white font-bold mb-1">${l}: ${otherCard.name}</div>
+                            <div class="text-purple-200 text-sm">${otherCard.keyword}</div>
+                        </div>
+                    `;
+                }).join('');
+            
+            document.getElementById('other-cards').innerHTML = otherCardsHtml;
+        }
+
+        function reset() {
+            selectedCards = getRandomCards();
+            currentSelection = null;
+            
+            document.getElementById('card-selection').classList.remove('hidden');
+            document.getElementById('subtitle').textContent = '마음으로 하나를 선택해봐';
+            document.getElementById('result').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
